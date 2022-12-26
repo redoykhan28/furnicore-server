@@ -28,11 +28,23 @@ async function run() {
         //create collection of categories
         const categoriesCollection = client.db('Furnicore').collection('categories')
 
+        //create collection of products
+        const productsCollection = client.db('Furnicore').collection('products')
+
         //get te categories
         app.get('/categories', async (req, res) => {
 
             const query = {}
             const result = await categoriesCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //get products based on cat name
+        app.get('/products/:name', async (req, res) => {
+
+            const name = req.params.name;
+            const query = { category_name: name }
+            const result = await productsCollection.find(query).sort({ _id: -1 }).toArray()
             res.send(result)
         })
 
