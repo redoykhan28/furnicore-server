@@ -31,6 +31,18 @@ async function run() {
         //create collection of products
         const productsCollection = client.db('Furnicore').collection('products')
 
+        //create collection of users
+        const usersCollection = client.db('Furnicore').collection('users')
+
+        //post user
+        app.post('/user', async (req, res) => {
+
+            const user = req.body;
+            const result = await usersCollection.insertOne(user)
+            res.send(result)
+
+        })
+
         //get te categories
         app.get('/categories', async (req, res) => {
 
