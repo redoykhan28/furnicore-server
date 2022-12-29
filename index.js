@@ -71,6 +71,14 @@ async function run() {
 
         })
 
+        //post product
+        app.post('/addproduct', async (req, res) => {
+
+            const product = req.body
+            const result = await productsCollection.insertOne(product)
+            res.send(result)
+        })
+
 
         //get jwt by user email
         app.get('/jwt', async (req, res) => {
@@ -112,7 +120,7 @@ async function run() {
         app.get('/products/:name', async (req, res) => {
 
             const name = req.params.name;
-            const query = { category_name: name }
+            const query = { category: name }
             const result = await productsCollection.find(query).sort({ _id: -1 }).toArray()
             res.send(result)
         })
@@ -124,6 +132,24 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const result = await productsCollection.findOne(query)
             res.send(result)
+        })
+
+        //get admin product
+        app.get('/adminProduct', async (req, res) => {
+
+            const email = req.query.email;
+            const query = { seller_email: email }
+            const result = await productsCollection.find(query).sort({ _id: -1 }).toArray()
+            res.send(result)
+        })
+
+        app.delete('/deleteProduct/:id', async (req, res) => {
+
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await productsCollection.deleteOne(query)
+            res.send(result)
+
         })
 
     }
