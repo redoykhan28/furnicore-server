@@ -62,6 +62,9 @@ async function run() {
         //create collection of users
         const usersCollection = client.db('Furnicore').collection('users')
 
+        //create collection of users
+        const ordersCollection = client.db('Furnicore').collection('orders')
+
         //post user
         app.post('/user', async (req, res) => {
 
@@ -76,6 +79,14 @@ async function run() {
 
             const product = req.body
             const result = await productsCollection.insertOne(product)
+            res.send(result)
+        })
+
+        //post order
+        app.post('/orders', async (req, res) => {
+
+            const order = req.body;
+            const result = await ordersCollection.insertOne(order)
             res.send(result)
         })
 
@@ -99,7 +110,7 @@ async function run() {
 
         })
 
-        //get te categories
+        //get categories
         app.get('/categories', async (req, res) => {
 
             const query = {}
