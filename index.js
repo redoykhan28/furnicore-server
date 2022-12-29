@@ -154,6 +154,26 @@ async function run() {
             res.send(result)
         })
 
+        //get admin orders
+        app.get('/orderlist', async (req, res) => {
+
+            const email = req.query.email;
+            const query = { seller_email: email };
+            const result = await ordersCollection.find(query).sort({ _id: -1 }).toArray()
+            res.send(result)
+
+        })
+
+
+        //get order details by id
+        app.get('/orderDetails/:id', async (req, res) => {
+
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await ordersCollection.findOne(query)
+            res.send(result)
+        })
+
         app.delete('/deleteProduct/:id', async (req, res) => {
 
             const id = req.params.id;
@@ -161,6 +181,31 @@ async function run() {
             const result = await productsCollection.deleteOne(query)
             res.send(result)
 
+        })
+
+        app.delete('/deleteOrder/:id', async (req, res) => {
+
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await ordersCollection.deleteOne(query)
+            res.send(result)
+
+        })
+
+
+        //put products for advertise
+        app.put('/orderUpdate/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+
+                    orderConfirm: "confirmed"
+                }
+            }
+            const result = await ordersCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
         })
 
     }
