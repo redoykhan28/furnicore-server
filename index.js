@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -10,6 +11,33 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //middleware 
 app.use(cors())
 app.use(express.json())
+
+//middle wear for varify jwt
+function jwtVerify(req, res, next) {
+
+    const authHeader = req.headers.authorization;
+    // console.log(authHeader)
+    if (!authHeader) {
+
+        return res.status(401).send('Unothorized User')
+    }
+
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (error, decoded) {
+
+        if (error) {
+
+            return res.status(403).send('Forbbiden access')
+        }
+
+        req.decoded = decoded
+
+        next()
+
+    })
+
+}
+
 
 app.get('/', (req, res) => {
 
@@ -40,6 +68,26 @@ async function run() {
             const user = req.body;
             const result = await usersCollection.insertOne(user)
             res.send(result)
+
+        })
+
+
+        //get jwt by user email
+        app.get('/jwt', async (req, res) => {
+
+            const email = req.query.email
+            const query = { email: email }
+            const user = await usersCollection.findOne(query)
+
+            //send jwt to client
+            if (user) {
+
+                const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '30d' })
+                return res.send({ accessToken: token })
+
+            }
+
+            res.status(403).send({ accessToken: '' })
 
         })
 
