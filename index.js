@@ -12,7 +12,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors())
 app.use(express.json())
 
-//middle wear for varify jwt
+//middlewear for varify jwt
 function jwtVerify(req, res, next) {
 
     const authHeader = req.headers.authorization;
@@ -74,8 +74,25 @@ async function run() {
 
         })
 
+
+        //verify admin
+        const verifyAdmin = async (req, res, next) => {
+
+            //verify
+            const decodedEmail = req.decoded.email;
+            const AdminQuery = { email: decodedEmail }
+            const user = await usersCollection.findOne(AdminQuery)
+
+            if (user?.role !== 'admin') {
+
+                return res.status(403).send('Forbidden Access');
+            }
+            next()
+
+        }
+
         //post product
-        app.post('/addproduct', async (req, res) => {
+        app.post('/addproduct', jwtVerify, async (req, res) => {
 
             const product = req.body
             const result = await productsCollection.insertOne(product)
@@ -110,6 +127,16 @@ async function run() {
 
         })
 
+        //get admin user to authorized route
+        app.get('/user/admin/:email', async (req, res) => {
+
+            const email = req.params.email;
+            const query = { email: email }
+            const result = await usersCollection.findOne(query)
+            res.send({ isAdmin: result?.role === 'admin' })
+
+        })
+
         //get categories
         app.get('/categories', async (req, res) => {
 
@@ -137,7 +164,7 @@ async function run() {
         })
 
         //get product details by id
-        app.get('/productDetails/:id', async (req, res) => {
+        app.get('/productDetails/:id', jwtVerify, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -146,7 +173,7 @@ async function run() {
         })
 
         //get admin product
-        app.get('/adminProduct', async (req, res) => {
+        app.get('/adminProduct', jwtVerify, verifyAdmin, async (req, res) => {
 
             const email = req.query.email;
             const query = { seller_email: email }
@@ -155,7 +182,7 @@ async function run() {
         })
 
         //get admin orders
-        app.get('/orderlist', async (req, res) => {
+        app.get('/orderlist', jwtVerify, verifyAdmin, async (req, res) => {
 
             const email = req.query.email;
             const query = { seller_email: email };
@@ -166,7 +193,7 @@ async function run() {
 
 
         //get order details by id
-        app.get('/orderDetails/:id', async (req, res) => {
+        app.get('/orderDetails/:id', jwtVerify, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -175,7 +202,7 @@ async function run() {
         })
 
 
-        app.delete('/deleteProduct/:id', async (req, res) => {
+        app.delete('/deleteProduct/:id', jwtVerify, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -184,7 +211,7 @@ async function run() {
 
         })
 
-        app.delete('/deleteOrder/:id', async (req, res) => {
+        app.delete('/deleteOrder/:id', jwtVerify, verifyAdmin, async (req, res) => {
 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
@@ -195,7 +222,7 @@ async function run() {
 
 
         //put products for advertise
-        app.put('/orderUpdate/:id', async (req, res) => {
+        app.put('/orderUpdate/:id', jwtVerify, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true }
