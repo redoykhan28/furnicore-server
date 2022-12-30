@@ -137,6 +137,15 @@ async function run() {
 
         })
 
+
+        //get categories
+        app.get('/users', async (req, res) => {
+
+            const query = {}
+            const result = await usersCollection.find(query).toArray()
+            res.send(result)
+        })
+
         //get categories
         app.get('/categories', async (req, res) => {
 
@@ -154,6 +163,15 @@ async function run() {
 
         })
 
+        //get total product
+        app.get('/totalproduct', async (req, res) => {
+
+            const query = {}
+            const result = await productsCollection.find(query).sort({ _id: -1 }).toArray()
+            res.send(result)
+
+        })
+
         //get products based on cat name
         app.get('/products/:name', async (req, res) => {
 
@@ -164,7 +182,7 @@ async function run() {
         })
 
         //get product details by id
-        app.get('/productDetails/:id', jwtVerify, verifyAdmin, async (req, res) => {
+        app.get('/productDetails/:id', async (req, res) => {
 
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
